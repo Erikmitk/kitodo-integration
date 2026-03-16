@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+COMPOSE_FILE="$(dirname "$0")/docker-compose.yml"
 BASE="http://localhost:8080/kitodo"
 MAX=30; i=0
 until curl -sf "$BASE" -o /dev/null; do
@@ -13,5 +14,5 @@ HTTP=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/login.jsf")
 
 curl -sf "http://localhost:9200/kitodo-process-000001" -o /dev/null && echo "OpenSearch index OK"
 
-docker exec "$(docker compose ps -q kitodo-app)" ls /opt/kitodo/modules/ | grep -q "kitodo-command" \
+docker exec "$(docker compose -f "$COMPOSE_FILE" ps -q kitodo-app)" ls /opt/kitodo/modules/ | grep -q "kitodo-command" \
   && echo "Modules OK" || (echo "Modules missing"; exit 1)

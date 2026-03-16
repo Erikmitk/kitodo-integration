@@ -17,7 +17,7 @@ jobs:
       - name: Bump submodules to latest remote main
         run: |
           git submodule foreach \
-            'branch=$(git remote show origin | grep "HEAD branch" | sed "s/.*: //"); \
+            'branch=$(git config -f "$toplevel/.gitmodules" "submodule.$name.branch"); \
              git checkout "$branch" && git pull'
 
       - name: Set up Java 21
