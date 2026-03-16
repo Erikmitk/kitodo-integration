@@ -8,6 +8,7 @@ on:
 permissions:
   contents: read
   actions: read   # needed to download artifacts from the triggering workflow run
+  issues: write   # needed to create canary issues on failure
 
 jobs:
   workflow-tests:
@@ -101,6 +102,7 @@ jobs:
             -Dfailsafe.failIfNoSpecifiedTests=false
 
       - name: Run backend workflow tests
+        if: always()
         working-directory: kitodo-production
         run: |
           mvn verify -P'!development' -B \
@@ -108,3 +110,22 @@ jobs:
             -Dit.test='*Workflow*,ConverterIT,ReaderIT,UpdaterIT' \
             -Dsurefire.failIfNoSpecifiedTests=false \
             -Dfailsafe.failIfNoSpecifiedTests=false
+
+      - name: Create canary issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `CI failure: workflow-tests failed on ${context.sha.slice(0, 7)}`,
+              body: [
+                '## Workflow tests failed',
+                '',
+                `**Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                `**Commit:** ${context.sha}`,
+                `**Triggered by build run:** ${{ github.event.workflow_run.id }}`,
+              ].join('\n'),
+              labels: ['ci-canary'],
+            })
