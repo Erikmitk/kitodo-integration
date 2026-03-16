@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  actions: write   # needed to upload build artifacts
 
 jobs:
   build:
@@ -64,12 +65,23 @@ jobs:
             > build-resources/kitodo.sql
           cp -r kitodo-production/Kitodo/modules build-resources/
 
-      - name: Start Docker stack
-        run: docker compose -f docker/docker-compose.yml up --build -d
+      - name: Upload WAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kitodo-war
+          path: build-resources/kitodo.war
+          retention-days: 1
 
-      - name: Run smoke tests
-        run: bash docker/smoke-test.sh
+      - name: Upload SQL artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kitodo-sql
+          path: build-resources/kitodo.sql
+          retention-days: 1
 
-      - name: Tear down Docker stack
-        if: always()
-        run: docker compose -f docker/docker-compose.yml down
+      - name: Upload modules artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kitodo-modules
+          path: build-resources/modules/
+          retention-days: 1

@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  actions: read   # needed to download artifacts from the triggering workflow run
 
 jobs:
   workflow-tests:
@@ -25,6 +26,11 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      - name: Set up Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
       - name: Cache Maven repository
         uses: actions/cache@v4
         with:
@@ -33,7 +39,68 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Run workflow tests
+      - name: Download WAR artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: kitodo-war
+          path: build-resources/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download SQL artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: kitodo-sql
+          path: build-resources/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download modules artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: kitodo-modules
+          path: build-resources/modules/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start Docker stack
+        run: docker compose -f docker/docker-compose.yml up --build -d
+
+      - name: Run smoke tests
+        run: bash docker/smoke-test.sh
+
+      - name: Tear down Docker stack
+        if: always()
+        run: docker compose -f docker/docker-compose.yml down
+
+      - name: Build workflow editor
+        working-directory: kitodo-workflow-editor
+        run: |
+          npm ci
+          npm run build
+
+      - name: Copy editor dist assets into Kitodo.Production
+        run: |
+          RESOURCES=kitodo-production/Kitodo/src/main/webapp/WEB-INF/resources
+          cp kitodo-workflow-editor/dist/js/modeler_min.js    "$RESOURCES/js/modeler_min.js"
+          cp kitodo-workflow-editor/dist/js/modeler_custom.js "$RESOURCES/js/modeler_custom.js"
+          cp kitodo-workflow-editor/dist/css/modeler.css      "$RESOURCES/css/modeler.css"
+          mkdir -p "$RESOURCES/font"
+          cp kitodo-workflow-editor/dist/font/*               "$RESOURCES/font/"
+
+      - name: Build Kitodo.Production (Maven)
+        working-directory: kitodo-production
+        run: mvn clean install -P'!development' -DskipTests -B
+
+      - name: Run Selenium workflow tests
+        working-directory: kitodo-production
+        run: |
+          mvn verify -pl Kitodo --also-make -P'!development,selenium' -B \
+            -Dsurefire.skip=true \
+            -Dit.test='AddingST,EditingST,MigrationST' \
+            -Dfailsafe.failIfNoSpecifiedTests=false
+
+      - name: Run backend workflow tests
         working-directory: kitodo-production
         run: |
           mvn verify -P'!development' -B \
