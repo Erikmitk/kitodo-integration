@@ -9,7 +9,7 @@ until curl -sf "$BASE" -o /dev/null; do
 done
 echo "App reachable"
 
-HTTP=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/login.jsf")
+HTTP=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/pages/login.jsf")
 [ "$HTTP" = "200" ] && echo "Login page OK" || (echo "Login page returned $HTTP"; exit 1)
 
 curl -sf "http://localhost:9200/kitodo-process-000001" -o /dev/null && echo "OpenSearch index OK"

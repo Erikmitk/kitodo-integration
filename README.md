@@ -1,8 +1,8 @@
 # kitodo-integration
 
-> **Note:** CI is currently expected to fail. Workflow editor 2.1.0 is not yet
-> merged into kitodo-production — once the upstream PR lands, the integration
-> build should pass and this notice will be removed.
+> **Note:** The workflow test suite is currently expected to fail. Workflow editor
+> 2.1.0 is not yet merged into kitodo-production — once the upstream PR lands,
+> the tests should pass and this notice will be removed.
 
 Integration layer that combines [Kitodo.Production](https://github.com/slub/kitodo-production) with the [Kitodo Workflow Editor](https://github.com/Erikmitk/kitodo-workflow-editor) and runs the full stack in Docker.
 

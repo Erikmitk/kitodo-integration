@@ -50,6 +50,13 @@ jobs:
         working-directory: kitodo-production
         run: mvn clean install -P'!development' -DskipTests -B
 
+      - name: Run workflow tests
+        working-directory: kitodo-production
+        run: |
+          mvn verify -P'!development' -B \
+            -Dtest='*Workflow*' \
+            -Dit.test='*Workflow*,ConverterIT,ReaderIT,UpdaterIT'
+
       - name: Stage build artifacts
         run: |
           mkdir -p build-resources
