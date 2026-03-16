@@ -1,4 +1,4 @@
-# kitodo-integration
+# Kitodo Workflow Editor × Kitodo.Production — Integration Dev Environment
 
 > **Note:** The workflow test suite is currently expected to fail. Workflow editor
 > 2.1.0 is not yet merged into kitodo-production — once the upstream PR lands,
