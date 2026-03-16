@@ -1,5 +1,8 @@
 # Kitodo Workflow Editor × Kitodo.Production — Integration Dev Environment
 
+[![Integration CI · build](https://github.com/Erikmitk/kitodo-integration/actions/workflows/integration-build.yml/badge.svg)](https://github.com/Erikmitk/kitodo-integration/actions/workflows/integration-build.yml)
+[![Integration CI · workflow tests](https://github.com/Erikmitk/kitodo-integration/actions/workflows/integration-workflow-tests.yml/badge.svg)](https://github.com/Erikmitk/kitodo-integration/actions/workflows/integration-workflow-tests.yml)
+
 > **Note:** The workflow test suite is currently expected to fail. Workflow editor
 > 2.1.0 is not yet merged into kitodo-production — once the upstream PR lands,
 > the tests should pass and this notice will be removed.
