@@ -128,4 +128,5 @@ jobs:
                 `**Triggered by build run:** ${{ github.event.workflow_run.id }}`,
               ].join('\n'),
               labels: ['ci-canary'],
+              assignees: ['Erikmitk'],
             })
