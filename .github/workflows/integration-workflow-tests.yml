@@ -1,10 +1,9 @@
 name: Integration CI · workflow tests
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_run:
+    workflows: ["Integration CI · build"]
+    types: [completed]
 
 permissions:
   contents: read
@@ -12,10 +11,12 @@ permissions:
 jobs:
   workflow-tests:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.workflow_run.head_sha }}
           submodules: recursive
 
       - name: Set up Java 21
