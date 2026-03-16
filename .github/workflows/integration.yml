@@ -1,0 +1,64 @@
+name: Integration CI (pinned)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-smoke-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Build workflow editor
+        working-directory: kitodo-workflow-editor
+        run: |
+          npm ci
+          npm run build
+
+      - name: Copy editor dist assets into Kitodo.Production
+        run: |
+          RESOURCES=kitodo-production/Kitodo/src/main/webapp/WEB-INF/resources
+          cp kitodo-workflow-editor/dist/js/modeler_min.js    "$RESOURCES/js/modeler_min.js"
+          cp kitodo-workflow-editor/dist/js/modeler_custom.js "$RESOURCES/js/modeler_custom.js"
+          cp kitodo-workflow-editor/dist/css/modeler.css      "$RESOURCES/css/modeler.css"
+          mkdir -p "$RESOURCES/font"
+          cp kitodo-workflow-editor/dist/font/*               "$RESOURCES/font/"
+
+      - name: Build Kitodo.Production (Maven)
+        working-directory: kitodo-production
+        run: mvn clean install -P'!development' -DskipTests -B
+
+      - name: Stage build artifacts
+        run: |
+          mkdir -p build-resources
+          cp kitodo-production/Kitodo/target/kitodo-*.war build-resources/kitodo.war
+          cat kitodo-production/Kitodo/setup/schema.sql kitodo-production/Kitodo/setup/default.sql \
+            > build-resources/kitodo.sql
+          cp -r kitodo-production/Kitodo/modules build-resources/
+
+      - name: Start Docker stack
+        run: docker compose -f docker/docker-compose.yml up --build -d
+
+      - name: Run smoke tests
+        run: bash docker/smoke-test.sh
+
+      - name: Tear down Docker stack
+        if: always()
+        run: docker compose -f docker/docker-compose.yml down

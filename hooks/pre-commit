@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Guard: ensure no submodule has drifted to an unexpected branch
+set -euo pipefail
+git submodule foreach --quiet '
+  expected=$(git config -f "$toplevel/.gitmodules" "submodule.$name.branch")
+  current=$(git symbolic-ref --short HEAD 2>/dev/null || echo "DETACHED")
+  if [ "$current" != "$expected" ]; then
+    echo "ERROR: Submodule \"$name\" is on branch \"$current\", expected \"$expected\""
+    echo "       Either switch back to \"$expected\" or update .gitmodules intentionally."
+    exit 1
+  fi
+'

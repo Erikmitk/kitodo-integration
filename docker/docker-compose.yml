@@ -1,0 +1,60 @@
+services:
+  kitodo-db:
+    image: ${DB_IMAGE:-mysql:8.0.32}
+    hostname: kitodo-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-1234}
+      MYSQL_DATABASE: ${DB_NAME:-kitodo}
+      MYSQL_USER: ${DB_USER:-kitodo}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-kitodo}
+    volumes:
+      - kitodo-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  kitodo-es:
+    image: ${ES_IMAGE:-opensearchproject/opensearch:2.15.0}
+    hostname: kitodo-es
+    environment:
+      - discovery.type=single-node
+      - DISABLE_SECURITY_PLUGIN=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.name=kitodo
+    volumes:
+      - kitodo-es-data:/usr/share/opensearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 12
+
+  kitodo-app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    hostname: kitodo-app
+    depends_on:
+      kitodo-db:
+        condition: service_healthy
+      kitodo-es:
+        condition: service_healthy
+    environment:
+      DB_HOST: kitodo-db
+      DB_PORT: "3306"
+      DB_NAME: ${DB_NAME:-kitodo}
+      DB_USER: ${DB_USER:-kitodo}
+      DB_PASSWORD: ${DB_PASSWORD:-kitodo}
+      ES_HOST: kitodo-es
+      ES_PORT: "9200"
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    volumes:
+      - kitodo-app-data:/usr/local/kitodo
+
+volumes:
+  kitodo-db-data:
+  kitodo-es-data:
+  kitodo-app-data:
