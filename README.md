@@ -3,10 +3,6 @@
 [![Integration CI · build](https://github.com/Erikmitk/kitodo-integration/actions/workflows/integration-build.yml/badge.svg)](https://github.com/Erikmitk/kitodo-integration/actions/workflows/integration-build.yml)
 [![Integration CI · workflow tests](https://github.com/Erikmitk/kitodo-integration/actions/workflows/integration-workflow-tests.yml/badge.svg)](https://github.com/Erikmitk/kitodo-integration/actions/workflows/integration-workflow-tests.yml)
 
-> **Note:** The workflow test suite is currently expected to fail. Workflow editor
-> 2.1.0 is not yet merged into kitodo-production — once the upstream PR lands,
-> the tests should pass and this notice will be removed.
-
 This repo is a **dev environment for working on the [Kitodo Workflow Editor](https://github.com/Erikmitk/kitodo-workflow-editor)**. It lets you spin up a fully integrated [Kitodo.Production](https://github.com/slub/kitodo-production) instance in Docker with your local editor changes applied — without needing to set up or maintain a local production environment. Run `./integrate.sh`, open the browser, and verify your editor changes against a real Kitodo.Production stack.
 
 ## Repository layout
