@@ -1,7 +1,7 @@
 [submodule "kitodo-production"]
 	path = kitodo-production
 	url = https://github.com/slub/kitodo-production
-	branch = integrate-workflow-editor-2.0
+	branch = main
 [submodule "kitodo-workflow-editor"]
 	path = kitodo-workflow-editor
 	url = https://github.com/Erikmitk/kitodo-workflow-editor
